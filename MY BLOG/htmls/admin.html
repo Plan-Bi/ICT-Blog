@@ -1,0 +1,579 @@
+<!DOCTYPE html> 
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>后台管理 | TechBlog</title>
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 粒子效果 -->
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <!-- Font Awesome 图标 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- highlight.js 样式 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
+  <!-- marked.js 用于 Markdown 解析 -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- 引入夜间模式CSS -->
+  <link rel="stylesheet" href="../css/dark-mode.css">
+  <style>
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100vh;
+      z-index: 1;
+    }
+    .admin-content {
+      position: relative;
+      z-index: 2;
+    }
+    .code-block {
+      background: #f3f4f6;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin: 1rem 0;
+      position: relative;
+      font-family: monospace;
+    }
+    .dark-mode .code-block {
+      background: #2d3748;
+      color: #e2e8f0;
+    }
+    .copy-button {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: #4a5568;
+      color: #fff;
+      border: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .tag {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      margin-right: 0.5rem;
+      font-size: 0.875rem;
+      border-radius: 9999px;
+      background-color: #f3e8ff;
+      color: #6b21a8;
+    }
+    .cursor-dark {
+      cursor: text;
+      color: #1a202c;
+    }
+    .dark-mode .cursor-dark {
+      color: #e2e8f0;
+    }
+    /* 修复鼠标颜色问题 */
+    textarea, input {
+      color: inherit;
+    }
+    textarea {
+      caret-color: #000000;
+    }
+    /* 预览模态框样式 */
+    #previewModal {
+      background: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      max-width: 800px;
+    }
+    /* 背景色 */
+    .bg-card {
+      background-color: #ffffff;
+    }
+    .dark .bg-card {
+      background-color: #2d3748;
+    }
+    /* 预览 iframe 样式 */
+    iframe { 
+      width: 100%; 
+      height: 500px; 
+      border: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-800">
+  <div id="particles-js"></div>
+
+  <nav class="fixed w-full z-50 backdrop-blur">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="../index.html" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">CyberLab</a>
+      <div class="space-x-8">
+        <button onclick="logout()" class="text-red-500 hover:text-red-700">
+          <i class="fas fa-sign-out-alt mr-2"></i>退出登录
+        </button>
+        <button onclick="toggleDarkMode()" class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">🌓</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-content container mx-auto pt-32 px-6">
+    <div class="bg-white dark:bg-gray-700 p-8 rounded-2xl shadow-lg">
+      <!-- 分类切换 -->
+      <div class="flex mb-6 border-b dark:border-gray-600">
+        <button class="tab-btn px-4 py-2 border-b-2 border-purple-600 text-purple-600" data-type="post" onclick="setCurrentType('post')">文章管理</button>
+        <button class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-purple-600" data-type="activity" onclick="setCurrentType('activity')">动态管理</button>
+      </div>
+
+      <!-- 搜索框 -->
+      <div class="flex mb-4">
+        <input type="text" id="searchInput" class="w-full p-2 border rounded dark:bg-gray-600 bg-card" placeholder="搜索文章...">
+        <button onclick="loadContents()" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">搜索</button>
+      </div>
+
+      <!-- 文章编辑区域 -->
+      <div class="input-group mb-8 p-4 border rounded dark:border-gray-600 bg-card">
+        <input type="text" id="contentTitle" class="w-full p-3 mb-4 border rounded dark:bg-gray-600 cursor-dark" placeholder="请输入标题" required>
+
+        <div class="mb-4">
+          <div id="tagsContainer" class="flex flex-wrap gap-2 mb-2"></div>
+          <input type="text" id="tagInput" class="w-full p-2 border rounded dark:bg-gray-600 cursor-dark" placeholder="输入标签，按回车添加">
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button type="button" onclick="insertMedia('image')" class="px-3 py-1 bg-blue-100 text-blue-600 rounded">
+            <i class="fas fa-image mr-2"></i>图片
+          </button>
+          <button type="button" onclick="insertMedia('video')" class="px-3 py-1 bg-green-100 text-green-600 rounded">
+            <i class="fas fa-video mr-2"></i>视频
+          </button>
+          <button type="button" onclick="insertMedia('code')" class="px-3 py-1 bg-purple-100 text-purple-600 rounded">
+            <i class="fas fa-code mr-2"></i>代码
+          </button>
+          <button type="button" onclick="insertMedia('file')" class="px-3 py-1 bg-yellow-100 text-yellow-600 rounded">
+            <i class="fas fa-file mr-2"></i>文件
+          </button>
+        </div>
+
+        <textarea id="contentBody" class="w-full h-64 p-4 border rounded dark:bg-gray-600 font-mono cursor-dark" placeholder="请输入内容（支持 Markdown 语法）..."></textarea>
+
+        <div class="flex justify-end gap-4 mt-4">
+          <button type="button" onclick="previewMarkdown()" class="px-4 py-2 border border-purple-600 text-purple-600 rounded">
+            <i class="fas fa-eye mr-2"></i>预览 Markdown
+          </button>
+          <button type="button" onclick="saveContent()" class="px-6 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+            <i class="fas fa-save mr-2"></i>保存并生成网页
+          </button>
+        </div>
+      </div>
+
+      <!-- 已保存文章列表（可选） -->
+      <div id="contentList" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <!-- 预览模态框（使用 iframe 显示完整生成页面） -->
+  <div id="previewModal" class="hidden fixed inset-0 bg-black/50 z-50">
+    <div class="modal-content bg-white dark:bg-gray-800 p-6 rounded-lg max-w-3xl mx-auto mt-20">
+      <div class="flex justify-between mb-4">
+        <h3 class="text-xl font-bold">内容预览</h3>
+        <button onclick="document.getElementById('previewModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">✕</button>
+      </div>
+      <iframe id="previewFrame"></iframe>
+      <div class="mt-4 text-right">
+        <button onclick="downloadArticle()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">下载网页文件</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- highlight.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+  <script>
+    let currentType = 'post'; // 默认文章管理
+    let currentTags = [];
+    let editingId = null;
+    let previewHTML = ""; // 用于保存生成的最终文章HTML
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      loadContents();
+      initParticles();
+    });
+
+    // 设置当前类型（文章或动态）
+    function setCurrentType(type) {
+      currentType = type;
+      loadContents();
+      updateTabStyle();
+    }
+    function updateTabStyle() {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.dataset.type === currentType) {
+          btn.classList.add('border-purple-600', 'text-purple-600');
+          btn.classList.remove('border-transparent', 'text-gray-500');
+        } else {
+          btn.classList.remove('border-purple-600', 'text-purple-600');
+          btn.classList.add('border-transparent', 'text-gray-500');
+        }
+      });
+    }
+
+    // 自定义 marked 渲染器，用于处理链接（视频、文件）语法
+    function getCustomRenderer() {
+      const renderer = new marked.Renderer();
+      renderer.link = function(href, title, text) {
+        if (text.toLowerCase() === 'video') {
+          return `<video controls src="${href}" style="max-width:100%;"></video>`;
+        } else if (text.toLowerCase() === 'file') {
+          return `<a href="${href}" download style="color:blue;">点击下载文件</a>`;
+        } else {
+          return `<a href="${href}" title="${title || ''}">${text}</a>`;
+        }
+      };
+      return renderer;
+    }
+
+    // 保存文章：保存到 localStorage 并生成最终页面 HTML，然后调用预览模态框并自动下载文件
+    function saveContent() {
+      const title = document.getElementById('contentTitle').value.trim();
+      const body = document.getElementById('contentBody').value.trim();
+      if (!title || !body) {
+        alert("标题和内容不能为空！");
+        return;
+      }
+      const currentDate = new Date().toLocaleString();
+      if (confirm("确定保存并生成网页吗？")) {
+        const content = { id: editingId || Date.now(), title, body, tags: currentTags, date: currentDate, type: currentType };
+        let contents = JSON.parse(localStorage.getItem('contents')) || [];
+        if (editingId) {
+          const index = contents.findIndex(item => item.id === editingId);
+          contents[index] = content;
+        } else {
+          contents.unshift(content);
+        }
+        localStorage.setItem('contents', JSON.stringify(contents));
+        alert("保存成功！");
+        loadContents();
+        resetForm();
+        // 生成最终文章页面 HTML 内容（与阅读详情页一致）
+        previewHTML = generateArticlePage(content);
+        showPreviewModal(previewHTML);
+        // 自动触发下载，方便手动移动到 posts 文件夹
+        downloadArticle();
+      }
+    }
+
+    // 生成文章页面 HTML（完整的 HTML 文档），样式参考阅读详情页
+    function generateArticlePage(content) {
+      const renderer = getCustomRenderer();
+      const processedBody = marked.parse(content.body, { renderer: renderer });
+      return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechBlog | 文章详情</title>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/dark-mode.css">
+  <style>
+    body {
+      transition: background-color 0.3s, color 0.3s;
+      background-color: #f7fafc;
+      color: #2d3748;
+    }
+    nav {
+      background: var(--nav-bg, rgba(255,255,255,0.9));
+    }
+    .content-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      padding-top: 100px;
+    }
+    .article-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+    .article-tags {
+      font-size: 1rem;
+      color: #718096;
+      margin-bottom: 1rem;
+    }
+    .article-content {
+      line-height: 1.8;
+      font-size: 1.125rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .article-content p {
+      //首航缩进text-indent: 2em; 
+      margin: 0.5em 0;
+    }
+    .article-date {
+      font-size: 0.875rem;
+      color: #a0aec0;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-800">
+  <nav class="fixed w-full z-50 backdrop-blur">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="../index.html" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">CyberLab</a>
+      <div class="space-x-6">
+        <a href="about.html" class="hover:text-blue-500 font-medium">关于我</a>
+        <a href="posts.html" class="hover:text-blue-500 font-medium">文章</a>
+        <a href="activity.html" class="hover:text-blue-500 font-medium">动态</a>
+        <a href="friends.html" class="hover:text-blue-500 font-medium">友情链接</a>
+      </div>
+    </div>
+  </nav>
+  <div class="content-container">
+    <h1 class="article-title">${content.title}</h1>
+    <div class="article-tags">标签： ${content.tags.join(', ')}</div>
+    <div class="article-content">
+      ${processedBody}
+    </div>
+    <div class="article-date">发布于： ${content.date}</div>
+  </div>
+  <script>
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+    }
+  <\/script>
+</body>
+</html>`;
+    }
+
+    // 下载文章文件（通过 Blob 触发文件下载），文件名格式为 post_时间戳.html
+    function downloadArticle() {
+      if (!previewHTML) {
+        alert("请先保存并生成文章！");
+        return;
+      }
+      const filename = `post_${Date.now()}.html`;
+      const blob = new Blob([previewHTML], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      alert(`文件已下载，请将文件手动移动到 posts 文件夹`);
+    }
+
+    // 显示预览模态框：将生成的完整 HTML 设置给 iframe 的 srcdoc
+    function showPreviewModal(html) {
+      const previewFrame = document.getElementById('previewFrame');
+      previewFrame.srcdoc = html;
+      document.getElementById('previewModal').classList.remove('hidden');
+    }
+
+    // Markdown 预览（仅预览编辑区内容，不含完整 HTML 框架），打开新窗口预览时保留格式
+    function previewMarkdown() {
+      const title = document.getElementById('contentTitle').value.trim();
+      const body = document.getElementById('contentBody').value;
+      if (!title || !body) {
+        alert("请先填写标题和内容！");
+        return;
+      }
+      const renderer = getCustomRenderer();
+      const markdownContent = `# ${title}\n\n标签： ${currentTags.join(', ')}\n\n${body}`;
+      const htmlContent = marked.parse(markdownContent, { renderer: renderer });
+      const previewHTML = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Markdown 预览</title>
+  <style>
+    body { 
+      padding: 2rem; 
+      font-family: sans-serif; 
+      background-color: #f7fafc; 
+      color: #2d3748; 
+    }
+    .content { 
+      white-space: pre-wrap;
+      max-width: 800px;
+      margin: 0 auto; 
+      line-height: 1.6;
+      word-break: break-word;
+    }
+    .content p { 
+      //首航缩进text-indent: 2em; 
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    ${htmlContent}
+  </div>
+</body>
+</html>`;
+      const win = window.open("", "_blank");
+      win.document.write(previewHTML);
+      win.document.close();
+    }
+
+    // 加载文章列表（通过 localStorage 保存的内容）
+    function loadContents() {
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      const contents = JSON.parse(localStorage.getItem('contents')) || [];
+      const filtered = contents.filter(item => item.title.toLowerCase().includes(searchQuery) && item.type === currentType);
+      const contentList = document.getElementById('contentList');
+      contentList.innerHTML = filtered.map(item => `
+        <div class="group p-4 border rounded dark:border-gray-600 mb-4">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h3 class="text-lg font-bold mb-1">${item.title}</h3>
+              <div class="prose dark:prose-dark">${item.body.substring(0, 100)}...</div>
+              <div class="mt-2">
+                ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+              </div>
+              <p class="text-xs text-gray-500 mt-2">发布于: ${item.date}</p>
+            </div>
+            <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onclick="editContent(${item.id})" class="text-blue-500 hover:text-blue-700">编辑</button>
+              <button onclick="deleteContent(${item.id})" class="text-red-500 hover:text-red-700">删除</button>
+              <button onclick="downloadSpecificArticle(${item.id})" class="text-green-500 hover:text-green-700">下载</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function downloadSpecificArticle(id) {
+      const contents = JSON.parse(localStorage.getItem('contents')) || [];
+      const content = contents.find(item => item.id === id);
+      if (!content) {
+        alert("未找到该文章！");
+        return;
+      }
+      const articleHTML = generateArticlePage(content);
+      const filename = `post_${content.id}.html`;
+      const blob = new Blob([articleHTML], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      alert(`文件 ${filename} 已下载，请将文件手动移动到 posts/activity 文件夹`);
+    }
+
+    // 编辑文章：填充表单
+    function editContent(id) {
+      const contents = JSON.parse(localStorage.getItem('contents')) || [];
+      const content = contents.find(item => item.id === id);
+      document.getElementById('contentTitle').value = content.title;
+      document.getElementById('contentBody').value = content.body;
+      currentTags = content.tags || [];
+      renderTags();
+      editingId = content.id;
+    }
+
+    // 删除文章
+    function deleteContent(id) {
+      if (confirm("确定要删除这篇文章吗？")) {
+        let contents = JSON.parse(localStorage.getItem('contents')) || [];
+        contents = contents.filter(item => item.id !== id);
+        localStorage.setItem('contents', JSON.stringify(contents));
+        alert("文章已删除！");
+        loadContents();
+      }
+    }
+
+    // 渲染标签
+    function renderTags() {
+      const tagsContainer = document.getElementById('tagsContainer');
+      tagsContainer.innerHTML = '';
+      currentTags.forEach(tag => {
+        const span = document.createElement('span');
+        span.classList.add('tag');
+        span.textContent = tag;
+        tagsContainer.appendChild(span);
+      });
+    }
+
+    // 插入多媒体代码
+    function insertMedia(type) {
+      const textarea = document.getElementById('contentBody');
+      let insertText = '';
+      switch (type) {
+        case 'image':
+          const imgUrl = prompt('请输入图片URL:');
+          if (imgUrl) insertText = `![图片描述](${imgUrl})\n`;
+          break;
+        case 'video':
+          const videoUrl = prompt('请输入视频URL:');
+          if (videoUrl) insertText = `[video](${videoUrl})\n`;
+          break;
+        case 'code':
+          insertText = "\n```\n// 在这里输入代码\n```\n";
+          break;
+        case 'file':
+          const fileUrl = prompt('请输入文件URL:');
+          if (fileUrl) insertText = `[file](${fileUrl})\n`;
+          break;
+      }
+      textarea.value += insertText;
+    }
+
+    // 退出登录
+    function logout() {
+      if (confirm("确定要退出登录吗？")) {
+        alert("已退出登录！");
+        localStorage.removeItem('isLoggedIn');
+        window.location.href = 'login.html';
+      }
+    }
+
+    // 粒子背景初始化
+    function initParticles() {
+      particlesJS('particles-js', {
+        particles: {
+          number: { value: 80 },
+          color: { value: '#ffffff' },
+          shape: { type: 'circle' },
+          opacity: { value: 0.5 },
+          size: { value: 3 },
+          move: { enable: true, speed: 2, direction: 'none', random: false, straight: false, out_mode: 'out' }
+        }
+      });
+    }
+
+    // 标签输入处理
+    document.getElementById('tagInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const tag = this.value.trim();
+        if (tag && !currentTags.includes(tag)) {
+          currentTags.push(tag);
+          renderTags();
+          this.value = '';
+        }
+      }
+    });
+
+    // 保证文件移动后实现数据恢复
+    function restoreArticlesFromBackup() {
+      fetch('./posts/articles-backup.json')
+        .then(response => response.json())
+        .then(data => {
+          localStorage.setItem('articles', JSON.stringify(data));
+          console.log('文章数据已恢复');
+          location.reload();
+        })
+        .catch(error => console.error('无法恢复文章数据', error));
+    }
+
+    // 如果 LocalStorage 为空，则自动恢复
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!localStorage.getItem('articles')) {
+        restoreArticlesFromBackup();
+      }
+    });
+  </script>
+  <!-- 引入粒子库和夜间模式JS（如有额外JS，可放此处） -->
+  <script src="../js/dark-mode.js"></script>
+</body>
+</html>

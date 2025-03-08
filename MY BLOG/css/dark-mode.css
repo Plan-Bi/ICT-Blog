@@ -1,0 +1,72 @@
+/* dark-mode.css */
+:root {
+    --bg-color: #ffffff;              /* 背景色（日间模式） */
+    --text-color: #1a1a1a;            /* 文字色（日间模式） */
+    --nav-bg: rgba(255, 255, 255, 0.9); /* 导航栏背景（日间模式） */
+    --card-bg: #ffffff;               /* 卡片背景（日间模式） */
+    --blur-bg: linear-gradient(135deg, rgba(177, 156, 217, 0.5), rgba(255, 182, 193, 0.5)); /* 日间模式渐变 */ /* 虚化背景（日间模式） */
+    --particle-color: '#ffffff';      /* 粒子颜色（日间模式） */
+
+    
+}
+
+.dark-mode {
+    --bg-color: #1a1a1a;              /* 背景色（夜间模式） */
+    --text-color: #ffffff;            /* 文字色（夜间模式） */
+    --nav-bg: rgba(26, 26, 26, 0.9);  /* 导航栏背景（夜间模式） */
+    --card-bg: #2d3748;               /* 卡片背景（夜间模式） */
+    --blur-bg: linear-gradient(135deg, rgba(75, 0, 130, 0.5), rgba(25, 25, 112, 0.5)); /* 夜间模式渐变 */ /* 虚化背景（夜间模式） */
+    --particle-color: '#a0aec0';      /* 粒子颜色（夜间模式） */
+
+}
+
+body {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color);
+    transition: all 0.3s ease;        /* 平滑过渡效果 */
+}
+
+/* 覆盖Tailwind类，确保与夜间模式兼容 */
+body .bg-white { background-color: var(--bg-color) !important; }
+body .bg-gray-100 { background-color: var(--bg-color) !important; }
+body .text-gray-600 { color: var(--text-color) !important; }
+
+/* 夜间模式下按钮背景色 */
+body.dark-mode .bg-gray-200 {
+    background-color: #4a4a4a !important;
+}
+
+/* 自定义卡片背景 */
+.bg-card {
+    background-color: var(--card-bg);
+}
+
+/* 虚化背景样式 */
+.blur-bg {
+    background-color: var(--blur-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* 渐变模糊背景 */
+.blur-bg {
+    background: var(--blur-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+/* 导航栏背景 */
+nav {
+    background-color: var(--nav-bg);
+}
+
+/* 粒子背景 */
+#particles-js {
+    position: absolute;
+    width: 100%;
+    height: 100vh;
+    z-index: 0;
+}

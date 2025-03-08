@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechBlog | 首页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 引入夜间模式CSS -->
+    <link rel="stylesheet" href="./css/dark-mode.css">
+    <style>
+        /* 页面渐变背景 */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        /* 滚动动画 */
+        .scroll-animate {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .scroll-animate.animate-active {
+            opacity: 1;
+        }
+
+
+        /* 新增渐变模糊背景样式 */
+        .gradient-blur-bg {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(175, 179, 200, 0.4),  /* 主色调紫色 */
+                rgba(223, 141, 219, 0.4)   /* 辅助色深紫 */
+            );
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            mask-image: radial-gradient(
+                ellipse at center,
+                rgba(0,0,0,1) 0%,
+                rgba(0,0,0,0.6) 100%
+            );
+            z-index: -1;
+        }
+
+        .dark-mode .gradient-blur-bg {
+            background: linear-gradient(
+                135deg,
+                rgba(0, 0, 0, 0.4),   /* 夜间模式深蓝 */
+                rgba(75, 0, 130, 0.4)     /* 夜间模式紫色 */
+            );
+        }
+
+        /* 修改首页头图结构 */
+        header {
+            position: relative;
+            overflow: hidden;
+        }
+        
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-800">
+    <div id="particles-js"></div>
+    
+  <!-- 导航栏 -->
+  <nav class="fixed w-full z-50 backdrop-blur">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="index.html" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">CyberLab</a>
+      <div class="space-x-6">
+        <a href="./htmls/about.html" class="hover:text-blue-500 font-medium">关于我</a>
+        <a href="./htmls/posts.html" class="hover:text-blue-500 font-medium">文章</a>
+        <a href="./htmls/activity.html" class="hover:text-blue-500 font-medium">动态</a>
+        <a href="./htmls/friends.html" class="hover:text-blue-500 font-medium">友情链接</a>
+        <button onclick="toggleDarkMode()" class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">🌓</button>
+      </div>
+    </div>
+  </nav>
+
+    <!-- 炫酷首页头图 -->
+    <header class="min-h-screen flex items-center justify-center">
+        <!-- 渐变模糊背景 -->
+        <div class="gradient-blur-bg"></div>
+        <div class="text-center z-10">
+            <h1 class="text-6xl font-bold mb-6 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+                探索网络技术
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">网络工程师的实战笔记与创意分享</p>
+            <div class="space-x-4">
+                <a href="./htmls/posts.html" class="px-8 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700">查看博客</a>
+                <a href="./htmls/about.html" class="px-8 py-3 border-2 border-purple-600 text-purple-600 rounded-full hover:bg-purple-50">联系作者</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 最新内容部分 -->
+    <section id="latest-posts" class="container mx-auto py-20 px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- 最新文章 -->
+            <div class="scroll-animate p-8 rounded-2xl shadow-lg card-hover bg-card">
+                <h3 class="text-2xl font-bold mb-2">大型企业网络架构设计</h3>
+                <p class="text-gray-600 mb-4">深入解析H3C/Juniper设备组网方案...</p>
+                <button onclick="window.location.href='post.html'" class="text-purple-600 hover:text-purple-700">阅读全文</button>
+            </div>
+            <!-- 最新动态 -->
+            <div class="scroll-animate p-8 rounded-2xl shadow-lg card-hover bg-card">
+                <h3 class="text-2xl font-bold mb-2">网络安全最佳实践分享</h3>
+                <p class="text-gray-600 mb-4">最新的网络安全技术与最佳实践，保护企业免受攻击...</p>
+                <button onclick="window.location.href='activity.html'" class="text-purple-600 hover:text-purple-700">查看动态</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 视频部分 
+    <section class="container mx-auto py-20 px-6">
+        <div class="scroll-animate p-8 rounded-2xl shadow-lg card-hover bg-card">
+            <h3 class="text-2xl font-bold mb-2">SD-WAN部署实战视频</h3>
+            <p class="text-gray-600 mb-4">点击播放查看SD-WAN技术部署的具体操作...</p>
+            <button onclick="toggleVideo()" class="text-purple-600 hover:text-purple-700">▶ 播放视频</button>
+            <div id="video-container" class="hidden mt-4">
+                <video class="w-full rounded-xl" controls>
+                    <source src="demo-video.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </section> 
+    -->
+
+
+    <!-- 页脚 -->
+    <footer class="py-12">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex justify-center space-x-8 mb-6">
+                <a href="./htmls/login.html" class="hover:text-purple-400">
+                    <i class="fas fa-user-shield mr-2"></i>管理员入口
+                </a>
+            </div>
+            <p class="opacity-75">© SSH  2025-<span id="currentYear"></span></p>
+        </div>
+    </footer>
+
+    <!-- 引入粒子库和其他JS -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="./js/dark-mode.js"></script>
+    <script>
+        // 页面滚动动画
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-active');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.scroll-animate').forEach((el) => observer.observe(el));
+
+        // 视频显示和播放
+        function toggleVideo() {
+            const videoContainer = document.getElementById('video-container');
+            videoContainer.classList.toggle('hidden');
+            if (!videoContainer.classList.contains('hidden')) {
+                videoContainer.querySelector('video').play();
+            }
+        }
+
+        // 更新年份
+        document.getElementById('currentYear').innerHTML = new Date().getFullYear();
+    </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员登录 | TechBlog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- 引入夜间模式CSS -->
+    <link rel="stylesheet" href="../css/dark-mode.css">
+    
+    <style>
+        /* 新增z-index层级控制 */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            z-index: 1; /* 降低粒子层级 */
+        }
+        .login-container {
+            position: relative;
+            z-index: 2; /* 提高登录表单层级 */
+        }
+        /* 其他原有样式保留 */
+        .card-hover { transition: transform 0.3s, box-shadow 0.3s; }
+        .dark-mode { background: #1a202c; color: #e2e8f0; }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-800">
+    
+
+    <!-- 动态粒子背景 -->
+    <div id="particles-js"></div>
+
+    <!-- 悬浮导航栏 -->
+    <nav class="fixed w-full z-50 backdrop-blur">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="../index.html" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">CyberLab</a>
+            <div class="space-x-8">
+                <a href="about.html" class="hover:text-purple-600 font-medium">关于我</a>
+                <a href="posts.html" class="hover:text-purple-600 font-medium">文章</a>
+                <a href="activity.html" class="hover:text-purple-600 font-medium">动态</a>
+                <a href="friends.html" class="hover:text-blue-500 font-medium">友情链接</a>
+                <button onclick="toggleDarkMode()" class="px-3 py-1 rounded bg-gray-200">🌓</button>
+            </div>
+        </div>
+    </nav>
+
+    
+    <!-- 添加登录容器层级控制 -->
+    <div class="min-h-screen flex items-center justify-center login-container">
+        <div class="bg-white dark:bg-gray-700 p-8 rounded-2xl shadow-lg card-hover w-96">
+            <h2 class="text-3xl font-bold mb-6 text-center">管理员登录</h2>
+            <form onsubmit="return handleLogin(event)" class="space-y-4">
+                <!-- 添加autocomplete和required属性 -->
+                <input type="text" id="username" 
+                       placeholder="用户名" 
+                       autocomplete="username"
+                       required
+                       class="w-full p-3 border rounded dark:bg-gray-600 focus:ring-2 focus:ring-purple-500">
+
+                <input type="password" id="password" 
+                       placeholder="密码" 
+                       autocomplete="current-password"
+                       required
+                       class="w-full p-3 border rounded dark:bg-gray-600 focus:ring-2 focus:ring-purple-500">
+
+                <button type="submit" 
+                        class="w-full bg-purple-600 text-white py-3 rounded hover:bg-purple-700 transition-all">
+                    登录
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 调整粒子参数避免密集覆盖
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 30 },  // 减少粒子数量
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.5 },
+                size: { value: 3 },
+                move: {
+                    enable: true,
+                    speed: 1.5,  // 降低移动速度
+                    direction: "none",
+                    random: true,
+                    straight: false,
+                    out_mode: "out",
+                }
+            }
+        });
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            // 添加输入验证
+            if (!username || !password) {
+                alert("请输入账号和密码");
+                return;
+            }
+
+            if(username === 'admin' && password === 'h3c.com!@#') {
+                localStorage.setItem('isAdmin', 'true');
+                window.location.href = 'admin.html';
+            } else {
+                alert('认证失败，请检查账号密码');
+                // 清空密码框
+                document.getElementById('password').value = '';
+            }
+        }
+    </script>
+
+    <!-- 引入粒子库和其他JS -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="../js/dark-mode.js"></script>
+
+</body>
+</html>

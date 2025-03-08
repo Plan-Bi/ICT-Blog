@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechBlog | 友情链接</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- 引入夜间模式CSS -->
+  <link rel="stylesheet" href="../css/dark-mode.css">
+  <style>
+    /* 粒子背景 */
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100vh;
+      z-index: 0;
+    }
+    /* 全局背景和颜色（支持夜间模式变量） */
+    body {
+      background-color: var(--bg-color, #f7fafc);
+      color: var(--text-color, #1a202c);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    /* 导航栏 */
+    nav {
+      background: var(--nav-bg, rgba(255,255,255,0.9));
+    }
+    /* 友情链接卡片 */
+    .link-card {
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .link-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    /* 搜索框样式 */
+    .search-input {
+      flex: 1;
+      min-width: 0;
+    }
+    .container {
+      z-index: 1;
+      position: relative;
+    }
+    
+    
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-800">
+  <div id="particles-js"></div>
+
+  <!-- 导航栏 -->
+  <nav class="fixed w-full z-50 backdrop-blur">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="../index.html" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
+        CyberLab
+      </a>
+      <div class="space-x-6">
+        <a href="about.html" class="hover:text-blue-500 font-medium">关于我</a>
+        <a href="posts.html" class="hover:text-blue-500 font-medium">文章</a>
+        <a href="activity.html" class="hover:text-blue-500 font-medium">动态</a>
+        <a href="friends.html" class="hover:text-blue-500 font-medium">友情链接</a>
+        <button onclick="toggleDarkMode()" class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">🌓</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mx-auto pt-32 px-6 content-container">
+    <div class="bg-white dark:bg-gray-700 p-8 rounded-2xl shadow-lg">
+      <h2 class="text-3xl font-bold mb-6">友情链接</h2>
+      <input type="text" id="searchInput" placeholder="搜索链接..." class="w-full p-3 mb-6 border rounded dark:bg-gray-600">
+      <div id="linksList" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <script>
+    // 定义友情链接数据，可以扩展更多链接
+    const linksData = [
+      { name: "公司官网", url: "https://www.jiekewl.com/", description: "优秀企业官网，展示公司业务与形象", category: "公司" },
+      { name: "优秀博主", url: "https://space.bilibili.com/388851616?spm_id_from=333.1391.0.0", description: "聚集优质内容的博主平台", category: "博主" },
+      { name: "开源项目", url: "https://github.com", description: "全球最大的开源社区", category: "开源" },
+      { name: "技术分享", url: "https://c4pr1c3.github.io/cuc-wiki/ns/2024/index.html", description: "最新技术资讯与分享", category: "资讯" }
+      // 更多链接……
+    ];
+    
+    const linksList = document.getElementById('linksList');
+    const searchInput = document.getElementById('searchInput');
+
+    function renderLinks(keyword = "") {
+      const filtered = linksData.filter(link => 
+        link.name.toLowerCase().includes(keyword.toLowerCase()) ||
+        link.description.toLowerCase().includes(keyword.toLowerCase()) ||
+        link.category.toLowerCase().includes(keyword.toLowerCase())
+      );
+      linksList.innerHTML = filtered.map(link => `
+        <div class="p-4 border rounded dark:border-gray-600 link-card">
+          <h3 class="text-xl font-bold mb-2">
+            <a href="${link.url}" target="_blank" class="hover:text-purple-600">${link.name}</a>
+          </h3>
+          <p class="text-gray-600 dark:text-gray-300">${link.description}</p>
+        </div>
+      `).join("");
+    }
+    
+    searchInput.addEventListener('input', (e) => {
+      renderLinks(e.target.value);
+    });
+    
+    renderLinks();
+  </script>
+
+  <script>
+    // 粒子背景初始化
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 80 },
+        color: { value: '#ffffff' },
+        shape: { type: 'circle' },
+        opacity: { value: 0.5 },
+        size: { value: 3 },
+        move: { enable: true, speed: 2, direction: 'none', random: false, straight: false, out_mode: 'out' }
+      }
+    });
+  </script>
+  <script src="../js/dark-mode.js"></script>
+</body>
+</html>

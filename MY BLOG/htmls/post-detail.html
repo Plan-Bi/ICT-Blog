@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechBlog | 文章详情</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- 引入夜间模式CSS -->
+  <link rel="stylesheet" href="../css/dark-mode.css">
+  <!-- 引入 marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body {
+      transition: background-color 0.3s, color 0.3s;
+    }
+    nav {
+      background: var(--nav-bg, rgba(255,255,255,0.9));
+    }
+    .content-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .article-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+    .article-tags {
+      font-size: 1rem;
+      color: #718096;
+      margin-bottom: 1rem;
+    }
+    .article-content {
+      line-height: 1.8;
+      font-size: 1.125rem;
+      white-space: pre-wrap; /* 保留换行和空格 */
+    }
+    .article-date {
+      font-size: 0.875rem;
+      color: #a0aec0;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-800">
+  <!-- 固定导航栏 -->
+  <nav class="fixed w-full z-50 backdrop-blur">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="../index.html" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
+        CyberLab
+      </a>
+      <div class="space-x-6">
+        <a href="about.html" class="hover:text-blue-500 font-medium">关于我</a>
+        <a href="posts.html" class="hover:text-blue-500 font-medium">文章</a>
+        <a href="activity.html" class="hover:text-blue-500 font-medium">动态</a>
+        <a href="friends.html" class="hover:text-blue-500 font-medium">友情链接</a>
+        <button onclick="toggleDarkMode()" class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">🌓</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 文章内容区域 -->
+  <div class="content-container">
+    <!-- 返回按钮 -->
+    <div class="mb-4">
+      <button onclick="goBack()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        <i class="fas fa-arrow-left mr-2"></i> 返回文章列表
+      </button>
+    </div>
+    <div id="articleContent" class="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-lg"></div>
+  </div>
+
+  <script>
+    // 夜间模式切换
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    }
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+    }
+
+    // 获取 URL 参数
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    // 自定义渲染器
+    function getCustomRenderer() {
+      const renderer = new marked.Renderer();
+      renderer.link = function(href, title, text) {
+        if (text.toLowerCase() === 'video') {
+          return `<video controls src="${href}" style="max-width:100%;"></video>`;
+        } else if (text.toLowerCase() === 'file') {
+          return `<a href="${href}" download style="color:blue;">点击下载文件</a>`;
+        } else {
+          return `<a href="${href}" title="${title || ''}">${text}</a>`;
+        }
+      };
+      return renderer;
+    }
+
+    // 加载文章详情
+    function loadArticle() {
+      const id = getQueryParam('id');
+      if (!id) {
+        document.getElementById('articleContent').innerHTML = '<p>缺少文章 ID 参数</p>';
+        return;
+      }
+      const posts = JSON.parse(localStorage.getItem('contents')) || [];
+      const article = posts.find(post => post.id == id);
+      if (!article) {
+        document.getElementById('articleContent').innerHTML = '<p>未找到对应文章</p>';
+        return;
+      }
+      // 使用自定义渲染器解析 Markdown 内容
+      const renderer = getCustomRenderer();
+      const parsedBody = marked.parse(article.body, { renderer: renderer });
+      const articleHTML = `
+        <h1 class="article-title">${article.title}</h1>
+        <div class="article-tags">标签： ${article.tags && article.tags.length > 0 ? article.tags.join(', ') : '无'}</div>
+        <div class="article-content">${parsedBody}</div>
+        <div class="article-date">发布于： ${article.date}</div>
+      `;
+      document.getElementById('articleContent').innerHTML = articleHTML;
+
+      // 调试信息
+      console.log('ID:', id);
+      console.log('Posts:', posts);
+      console.log('Article:', article);
+    }
+
+    // 返回上一页或跳转到动态列表
+    function goBack() {
+      if (document.referrer === "" || document.referrer.indexOf("activity-detail.html") !== -1) {
+        window.location.href = "activity.html";
+      } else {
+        window.history.back();
+      }
+    }
+
+    // 调用加载函数
+    loadArticle();
+  </script>
+</body>
+</html>

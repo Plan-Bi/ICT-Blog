@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechBlog | 动态首页</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- 引入 marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>  
+  <!-- 引入夜间模式CSS -->
+  <link rel="stylesheet" href="../css/dark-mode.css">
+  <style>
+    /* 粒子背景 */
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100vh;
+      z-index: 0;
+    }
+    /* 页面整体背景及文字色（支持夜间模式变量） */
+    body {
+      background-color: var(--bg-color, #f7fafc);
+      color: var(--text-color, #1a202c);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    /* 导航栏样式 */
+    nav {
+      background: var(--nav-bg, rgba(255,255,255,0.9));
+    }
+    /* 动态卡片 */
+    .card-hover {
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    /* 搜索栏与分页 */
+    .search-input, .search-select {
+      min-width: 0;
+      flex: 1;
+    }
+    /* 分页导航 */
+    .pagination a {
+      margin: 0 0.25rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.25rem;
+    }
+    .pagination a.active {
+      background-color: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    /* 保证容器有足够内边距 */
+    .container {
+      z-index: 1;
+      position: relative;
+    }
+    /* 调整容器与导航栏的间距 */
+    .content-container {
+      margin-top: 80px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-800">
+  <div id="particles-js"></div>
+
+  <!-- 导航栏 -->
+  <nav class="fixed w-full z-50 backdrop-blur">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="../index.html" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">CyberLab</a>
+      <div class="space-x-6">
+        <a href="about.html" class="hover:text-blue-500 font-medium">关于我</a>
+        <a href="posts.html" class="hover:text-blue-500 font-medium">文章</a>
+        <a href="activity.html" class="hover:text-blue-500 font-medium">动态</a>
+        <a href="friends.html" class="hover:text-blue-500 font-medium">友情链接</a>
+        <button onclick="toggleDarkMode()" class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">🌓</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 搜索栏（高级搜索：标题、标签、发布时间） -->
+  <div class="container mx-auto pt-32 px-6">
+    <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow mb-6 flex flex-col md:flex-row gap-4">
+      <input id="searchTitle" type="text" class="search-input p-2 border rounded dark:bg-gray-600" placeholder="搜索标题">
+      <input id="searchTag" type="text" class="search-input p-2 border rounded dark:bg-gray-600" placeholder="搜索标签">
+      <input id="searchDate" type="text" class="search-input p-2 border rounded dark:bg-gray-600" placeholder="搜索发布时间">
+      <button onclick="applySearch()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">搜索</button>
+    </div>
+
+    <!-- 动态列表 -->
+    <div id="postsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8"></div>
+
+    <!-- 分页导航 -->
+    <div id="pagination" class="pagination flex justify-center mt-8"></div>
+  </div>
+
+  <script>
+    // 从 localStorage 读取所有文章数据（键使用 "contents"），然后筛选出 type 为 "activity" 的动态
+    // 从 localStorage 读取所有文章数据（键使用 "contents"），然后筛选出 type 为 "activity" 的动态
+    let postsData = JSON.parse(localStorage.getItem('contents')) || [];
+    postsData = postsData.filter(post => post.type === 'activity');
+    const postsPerPage = 6; // 每页显示动态数
+    let currentPage = 1;
+    let filteredPosts = postsData;
+
+    // 加载动态列表（修复后的版本）
+    function loadPosts() {
+      const container = document.getElementById('postsContainer');
+      container.innerHTML = "";
+      const start = (currentPage - 1) * postsPerPage;
+      const end = start + postsPerPage;
+      const pagePosts = filteredPosts.slice(start, end);
+
+      pagePosts.forEach(post => {
+        // 解析 Markdown 内容
+        const parsedBody = marked.parse(post.body);
+
+        // 生成标签 HTML
+        const tagsHTML = post.tags && post.tags.length > 0
+          ? post.tags.map(tag => `<span class="inline-block bg-purple-100 text-purple-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">${tag}</span>`).join('')
+          : '<span class="text-gray-500 text-xs">无标签</span>';
+
+        container.innerHTML += `
+          <div class="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg card-hover">
+            <h3 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">${post.title}</h3>
+            <div class="flex flex-wrap gap-2 mb-4">
+              ${tagsHTML}
+            </div>
+            <div class="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+              ${parsedBody}
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              发布于：${post.date}
+            </div>
+            <a href="post-detail.html?id=${post.id}" class="text-purple-600 hover:text-purple-700" onclick="saveScrollPosition()">
+              阅读全文 →
+            </a>
+          </div>
+        `;
+      });
+      renderPagination();
+    }
+
+    // 渲染分页导航
+    function renderPagination() {
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = "";
+      const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+      if (totalPages <= 1) return;
+      // 上一页
+      if (currentPage > 1) {
+        pagination.innerHTML += `<a href="javascript:void(0)" onclick="goToPage(${currentPage-1})">&laquo; 上一页</a>`;
+      }
+      // 页码
+      for (let i = 1; i <= totalPages; i++) {
+        pagination.innerHTML += `<a href="javascript:void(0)" onclick="goToPage(${i})" class="${i===currentPage?'active':''}">${i}</a>`;
+      }
+      // 下一页
+      if (currentPage < totalPages) {
+        pagination.innerHTML += `<a href="javascript:void(0)" onclick="goToPage(${currentPage+1})">下一页 &raquo;</a>`;
+      }
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      loadPosts();
+      // 更新URL hash保存当前页码（便于返回时定位）
+      window.location.hash = `page=${currentPage}`;
+    }
+
+    // 高级搜索处理
+    function applySearch() {
+      const titleKey = document.getElementById('searchTitle').value.toLowerCase();
+      const tagKey = document.getElementById('searchTag').value.toLowerCase();
+      const dateKey = document.getElementById('searchDate').value.toLowerCase();
+      filteredPosts = postsData.filter(post => {
+        const matchTitle = post.title.toLowerCase().includes(titleKey);
+        const matchTag = tagKey === "" || (post.tags && post.tags.join(' ').toLowerCase().includes(tagKey));
+        const matchDate = dateKey === "" || (post.date && post.date.toLowerCase().includes(dateKey));
+        return matchTitle && matchTag && matchDate;
+      });
+      currentPage = 1;
+      loadPosts();
+    }
+
+    // 保存当前滚动位置（在点击动态链接时调用）
+    function saveScrollPosition() {
+      sessionStorage.setItem("postsScrollPosition", window.scrollY);
+    }
+
+    // 加载时恢复滚动位置和页码
+    window.addEventListener('load', () => {
+      // 如果 URL hash 有页码信息则恢复当前页码
+      const hash = window.location.hash;
+      if (hash.startsWith("#page=")) {
+        currentPage = parseInt(hash.replace("#page=", "")) || 1;
+      }
+      loadPosts();
+      const savedPosition = sessionStorage.getItem("postsScrollPosition");
+      if (savedPosition) {
+        window.scrollTo(0, parseInt(savedPosition));
+        sessionStorage.removeItem("postsScrollPosition");
+      }
+    });
+  </script>
+
+  <!-- 粒子背景初始化 -->
+  <script>
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 80 },
+        color: { value: '#ffffff' },
+        shape: { type: 'circle' },
+        opacity: { value: 0.5 },
+        size: { value: 3 },
+        move: { enable: true, speed: 2, direction: 'none', random: false, straight: false, out_mode: 'out' }
+      }
+    });
+  </script>
+
+  <!-- 引入夜间模式JS -->
+  <script src="../js/dark-mode.js"></script>
+</body>
+</html>

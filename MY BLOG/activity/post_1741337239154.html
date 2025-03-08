@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechBlog | 文章详情</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/dark-mode.css">
+  <style>
+    body {
+      transition: background-color 0.3s, color 0.3s;
+      background-color: #f7fafc;
+      color: #2d3748;
+    }
+    nav {
+      background: var(--nav-bg, rgba(255,255,255,0.9));
+    }
+    .content-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      padding-top: 100px;
+    }
+    .article-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+    .article-tags {
+      font-size: 1rem;
+      color: #718096;
+      margin-bottom: 1rem;
+    }
+    .article-content {
+      line-height: 1.8;
+      font-size: 1.125rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .article-content p {
+      //首航缩进text-indent: 2em; 
+      margin: 0.5em 0;
+    }
+    .article-date {
+      font-size: 0.875rem;
+      color: #a0aec0;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-800">
+  <nav class="fixed w-full z-50 backdrop-blur">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="../index.html" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">CyberLab</a>
+      <div class="space-x-6">
+        <a href="about.html" class="hover:text-blue-500 font-medium">关于我</a>
+        <a href="posts.html" class="hover:text-blue-500 font-medium">文章</a>
+        <a href="activity.html" class="hover:text-blue-500 font-medium">动态</a>
+        <a href="friends.html" class="hover:text-blue-500 font-medium">友情链接</a>
+      </div>
+    </div>
+  </nav>
+  <div class="content-container">
+    <h1 class="article-title">S5130V2 CPU异常及PING延迟问题</h1>
+    <div class="article-tags">标签： H3C, 交换机, 技术公告</div>
+    <div class="article-content">
+      <p>S5130V2 交换机
+版本 R3507P18
+该版本存在概率设备TMTH进程高。
+产生问题：CPU异常（&gt;14%）,PING交换机三层接口（VLAN-IF）地址延迟
+检查方法：</p>
+<pre><code>//dis ver 查看系统版本
+//dis cup 查看cpu利用率
+//dis process cpu 查看进程，确定异常
+//dis process memory 查看进程数据处理情况
+</code></pre>
+<p>通过查看进程发现TMTH进程高达17.3%，进一步查看该进程数据处理，发现没有任何数据，确定原因。
+解决方案：400告知，安装热补丁即可
+其他：概率发现</p>
+
+    </div>
+    <div class="article-date">发布于： 2025/3/7 17:04:59</div>
+  </div>
+  <script>
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+    }
+  </script>
+</body>
+</html>
